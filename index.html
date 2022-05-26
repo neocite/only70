@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Only 70</title>
+        <style>
+            body {
+              text-align: center;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+          
+            div {
+              width: 20%;
+              margin: 0 auto;
+              display: flex;
+              flex-direction: column;
+            }
+          
+            button {
+              width: 100%;
+              margin: 10px 0px 5px 0px;
+            }
+        </style>
+        <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript">
+        </script>
+        <script>
+          const Only70ContractAddress = "0xcC5e0353e18A7d611D540Ae20565ED593d794A9d";
+          const OnlyContractABI = [{
+            "constant": true,
+            "inputs": [],
+            "name": "getContent",
+            "outputs": [{
+                "internalType": "string[]",
+                "name": "",
+                "type": "string[]"
+            }],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "constant": false,
+            "inputs": [
+              {
+                "internalType": "string",
+                "name": "_mood",
+                "type": "string"
+              }
+            ],
+            "name": "setContent",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+          ];
+          let MoodContract;
+          let signer;
+          const provider = new ethers.providers.Web3Provider(window.ethereum, "rinkeby");
+          provider.send("eth_requestAccounts", []).then(() => {
+            provider.listAccounts().then((accounts) => {
+            signer = provider.getSigner(accounts[0]);
+            ContentContract = new ethers.Contract(
+                Only70ContractAddress,
+                OnlyContractABI,
+                signer
+            );
+          });
+        });
+        async function getContent() {
+          const getContentPromise = ContentContract.getContent();
+          const contents = await getContentPromise;
+          
+          if(document.getElementById("container")) {
+            document.getElementById("container").remove();
+          }
+          
+
+          const container = document.createElement("div");
+          container.setAttribute("id", "container");
+          document.body.appendChild(container);
+
+          for(let i = 0; i < contents.length; i++) {
+            const content = document.createElement("div");
+            content.innerHTML = contents[i];
+            document.getElementById("container").appendChild(content);
+          }
+          
+        }
+
+        async function setContent() {
+          const content = document.getElementById("content").value;
+          const setContentPromise = ContentContract.setContent(content);
+          await setContentPromise;
+        }
+        </script>
+  </head>
+  <body>
+    <div>
+        <h1>This is Only 70!</h1>
+        <p>Here we can set or get only 70 characters:</p>
+        <label for="content">Input Content:</label> <br />
+        <input type="text" id="content" />
+        <button onclick="setContent()">Set Content</button>
+        <button onclick="getContent()">Get Content</button>
+    </div>
+  </body>
+</html>
